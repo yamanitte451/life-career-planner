@@ -10,7 +10,7 @@ interface Advice {
   message: string;
 }
 
-function generateAdvice(plan: LifePlan): Advice[] {
+export function generateAdvice(plan: LifePlan): Advice[] {
   const adviceList: Advice[] = [];
 
   const totalAnnualIncome =
