@@ -49,9 +49,12 @@ function generateAdvice(plan: LifePlan): Advice[] {
     plan.debt.studentLoan +
     plan.debt.otherDebt;
 
-  const annualSavings = totalAnnualIncome - annualExpense;
-  const savingsRate = totalAnnualIncome > 0 ? annualSavings / totalAnnualIncome : 0;
   const annualInvestment = plan.investment.monthlyInvestment * 12;
+  const annualDebtRepayment =
+    (plan.debt as any).annualRepayment ?? 0;
+  const annualSavings =
+    totalAnnualIncome - annualExpense - annualInvestment - annualDebtRepayment;
+  const savingsRate = totalAnnualIncome > 0 ? annualSavings / totalAnnualIncome : 0;
 
   // Savings rate advice
   if (savingsRate >= 0.2) {
