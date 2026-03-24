@@ -6,6 +6,7 @@ import IncomeForm from '../../components/forms/IncomeForm';
 import ExpenseForm from '../../components/forms/ExpenseForm';
 import AssetForm from '../../components/forms/AssetForm';
 import InvestmentForm from '../../components/forms/InvestmentForm';
+import LifeEventForm from '../../components/forms/LifeEventForm';
 
 const steps = [
   { title: '基本情報', icon: '👤', component: BasicInfoForm },
@@ -13,6 +14,7 @@ const steps = [
   { title: '支出', icon: '🛒', component: ExpenseForm },
   { title: '資産・負債', icon: '🏦', component: AssetForm },
   { title: '投資前提', icon: '📈', component: InvestmentForm },
+  { title: 'ライフイベント', icon: '📅', component: LifeEventForm },
 ];
 
 export default function SetupPage() {

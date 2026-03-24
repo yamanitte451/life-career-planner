@@ -83,6 +83,7 @@ export default function DashboardPage() {
                   <th className="p-2 text-right">年支出</th>
                   <th className="p-2 text-right">年間貯蓄</th>
                   <th className="p-2 text-right">純資産</th>
+                  <th className="p-2 text-left">イベント</th>
                 </tr>
               </thead>
               <tbody>
@@ -97,6 +98,9 @@ export default function DashboardPage() {
                     </td>
                     <td className={`p-2 text-right font-semibold ${row.netAssets >= 0 ? 'text-indigo-600' : 'text-red-600'}`}>
                       {formatMan(row.netAssets)}
+                    </td>
+                    <td className="p-2 text-left text-xs text-orange-600">
+                      {row.events.length > 0 ? `📅 ${row.events.join(', ')}` : ''}
                     </td>
                   </tr>
                 ))}

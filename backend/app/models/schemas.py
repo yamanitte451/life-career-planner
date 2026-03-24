@@ -1,7 +1,8 @@
 from sqlalchemy import Column, String, JSON
 from sqlalchemy.orm import DeclarativeBase
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
+from enum import Enum
 import uuid
 
 
@@ -27,11 +28,13 @@ class PersonSchema(BaseModel):
 
 
 class HouseholdSchema(BaseModel):
-    self_: PersonSchema
-    spouse: PersonSchema
+    self_: PersonSchema = Field(alias="self", default_factory=PersonSchema)
+    spouse: PersonSchema = PersonSchema()
     residenceArea: str = "東京都"
     familyComposition: str = "夫婦のみ"
     hasChildren: bool = False
+
+    model_config = {"populate_by_name": True}
 
 
 class IncomeSchema(BaseModel):
@@ -81,13 +84,45 @@ class InvestmentSchema(BaseModel):
     idecoMonthly: float = 0
 
 
+class LifeEventCategoryEnum(str, Enum):
+    marriage = "marriage"
+    childbirth = "childbirth"
+    childcare = "childcare"
+    education = "education"
+    housing = "housing"
+    car = "car"
+    career = "career"
+    retirement = "retirement"
+    other = "other"
+
+
+class PersonTargetEnum(str, Enum):
+    self_ = "self"
+    spouse = "spouse"
+    household = "household"
+
+
+class LifeEventSchema(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str = ""
+    category: LifeEventCategoryEnum = LifeEventCategoryEnum.other
+    yearOffset: int = 1
+    person: PersonTargetEnum = PersonTargetEnum.household
+    oneTimeCost: float = 0
+    annualCostChange: float = 0
+    annualIncomeChange: float = 0
+    durationYears: int = 0
+    memo: str = ""
+
+
 class LifePlanSchema(BaseModel):
-    household: dict
-    income: IncomeSchema
-    expense: ExpenseSchema
-    assets: AssetSchema
-    debt: DebtSchema
-    investment: InvestmentSchema
+    household: HouseholdSchema = HouseholdSchema()
+    income: IncomeSchema = IncomeSchema()
+    expense: ExpenseSchema = ExpenseSchema()
+    assets: AssetSchema = AssetSchema()
+    debt: DebtSchema = DebtSchema()
+    investment: InvestmentSchema = InvestmentSchema()
+    lifeEvents: list[LifeEventSchema] = []
 
 
 class SimulationRequest(BaseModel):

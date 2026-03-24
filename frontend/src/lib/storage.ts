@@ -68,6 +68,7 @@ export const defaultLifePlan: LifePlan = {
     nisaMonthly: 30000,
     idecoMonthly: 23000,
   },
+  lifeEvents: [],
 };
 
 export function savePlan(plan: LifePlan): void {
@@ -81,7 +82,16 @@ export function loadPlan(): LifePlan {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return defaultLifePlan;
   try {
-    return { ...defaultLifePlan, ...JSON.parse(stored) };
+    const parsed = JSON.parse(stored);
+    return {
+      household: { ...defaultLifePlan.household, ...parsed.household, self: { ...defaultLifePlan.household.self, ...parsed.household?.self }, spouse: { ...defaultLifePlan.household.spouse, ...parsed.household?.spouse } },
+      income: { ...defaultLifePlan.income, ...parsed.income },
+      expense: { ...defaultLifePlan.expense, ...parsed.expense },
+      assets: { ...defaultLifePlan.assets, ...parsed.assets },
+      debt: { ...defaultLifePlan.debt, ...parsed.debt },
+      investment: { ...defaultLifePlan.investment, ...parsed.investment },
+      lifeEvents: Array.isArray(parsed.lifeEvents) ? parsed.lifeEvents : [],
+    };
   } catch {
     return defaultLifePlan;
   }

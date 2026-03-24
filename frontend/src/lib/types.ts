@@ -63,6 +63,30 @@ export interface InvestmentPlan {
   idecoMonthly: number;
 }
 
+export type LifeEventCategory =
+  | 'marriage'
+  | 'childbirth'
+  | 'childcare'
+  | 'education'
+  | 'housing'
+  | 'car'
+  | 'career'
+  | 'retirement'
+  | 'other';
+
+export interface LifeEvent {
+  id: string;
+  name: string;
+  category: LifeEventCategory;
+  yearOffset: number; // years from now (0 = this year)
+  person: 'self' | 'spouse' | 'household';
+  oneTimeCost: number;
+  annualCostChange: number; // ongoing annual expense change (positive = increase)
+  annualIncomeChange: number; // ongoing annual income change (positive = increase)
+  durationYears: number; // how many years the ongoing changes last (0 = permanent)
+  memo: string;
+}
+
 export interface LifePlan {
   household: HouseholdProfile;
   income: IncomePlan;
@@ -70,6 +94,7 @@ export interface LifePlan {
   assets: AssetAccount;
   debt: DebtPlan;
   investment: InvestmentPlan;
+  lifeEvents: LifeEvent[];
 }
 
 export interface SimulationYearData {
@@ -85,4 +110,5 @@ export interface SimulationYearData {
   netAssets: number;
   savings: number;
   investments: number;
+  events: string[]; // names of life events occurring this year
 }
