@@ -13,8 +13,10 @@ def run_simulation(plan: Dict[str, Any], years: int = 30) -> List[Dict]:
     household = plan.get("household", {})
     life_events = plan.get("lifeEvents", [])
 
-    self_age = household.get("self", {}).get("age", 30)
-    spouse_age = household.get("spouse", {}).get("age", 28)
+    self_info = household.get("self") or household.get("self_", {})
+    spouse_info = household.get("spouse") or household.get("spouse_", {})
+    self_age = self_info.get("age", 30)
+    spouse_age = spouse_info.get("age", 28)
 
     base_annual_income = (
         income.get("selfAnnualIncome", 0) + income.get("spouseAnnualIncome", 0) +

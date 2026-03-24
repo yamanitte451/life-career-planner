@@ -106,12 +106,12 @@ class LifeEventSchema(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str = ""
     category: LifeEventCategoryEnum = LifeEventCategoryEnum.other
-    yearOffset: int = 1
+    yearOffset: int = Field(default=1, ge=0)
     person: PersonTargetEnum = PersonTargetEnum.household
-    oneTimeCost: float = 0
+    oneTimeCost: float = Field(default=0, ge=0)
     annualCostChange: float = 0
     annualIncomeChange: float = 0
-    durationYears: int = 0
+    durationYears: int = Field(default=0, ge=0)
     memo: str = ""
 
 

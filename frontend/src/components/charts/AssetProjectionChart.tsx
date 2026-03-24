@@ -54,7 +54,7 @@ export default function AssetProjectionChart({ data, years }: Props) {
   // Find years with events for reference lines
   const eventYears = chartData
     .filter((d) => d.events && d.events.length > 0)
-    .map((d) => ({ year: d.year, label: d.events.join(', ') }));
+    .map((d) => ({ year: d.year }));
 
   return (
     <ResponsiveContainer width="100%" height={400}>

@@ -349,3 +349,13 @@ class TestLifeEvents:
         assert "転職" in result[2]["events"]
         assert "出産" in result[2]["events"]
         assert len(result[2]["events"]) == 2
+
+    def test_self_underscore_alias_handled(self):
+        """Regression: Pydantic model_dump() produces 'self_' key; simulation must handle both."""
+        plan = _base_plan()
+        # Replace "self" key with "self_" (as Pydantic would produce)
+        self_data = plan["household"].pop("self")
+        plan["household"]["self_"] = self_data
+        result = run_simulation(plan, years=3)
+        assert len(result) == 3
+        assert result[0]["age"] == 30

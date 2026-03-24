@@ -1,7 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import { runSimulation, formatCurrency, formatMan } from '../lib/simulation';
 import { defaultLifePlan } from '../lib/storage';
-import { LifePlan } from '../lib/types';
+import { LifePlan, LifeEvent } from '../lib/types';
+
+function createLifeEvent(overrides: Partial<LifeEvent> = {}): LifeEvent {
+  return {
+    id: 'test',
+    name: '',
+    category: 'other',
+    yearOffset: 0,
+    person: 'household',
+    oneTimeCost: 0,
+    annualCostChange: 0,
+    annualIncomeChange: 0,
+    durationYears: 0,
+    memo: '',
+    ...overrides,
+  };
+}
 
 describe('runSimulation', () => {
   it('returns correct number of years based on input', () => {
@@ -133,6 +149,113 @@ describe('runSimulation', () => {
     const results = runSimulation(defaultLifePlan, 5);
     results.forEach((row) => {
       expect(row.netAssets).toBeCloseTo(row.totalAssets - row.totalDebt, 0);
+    });
+  });
+
+  it('returns empty events array when no life events', () => {
+    const results = runSimulation(defaultLifePlan, 3);
+    results.forEach((r) => expect(r.events).toEqual([]));
+  });
+
+  describe('life events', () => {
+    it('applies one-time cost in the correct year', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        lifeEvents: [
+          createLifeEvent({ id: 't1', name: '住宅購入', category: 'housing', yearOffset: 2, oneTimeCost: 5000000, durationYears: 1 }),
+        ],
+      };
+      const withEvents = runSimulation(plan, 5);
+      const withoutEvents = runSimulation(defaultLifePlan, 5);
+      expect(withEvents[0].annualExpense).toBe(withoutEvents[0].annualExpense);
+      expect(withEvents[1].annualExpense).toBe(withoutEvents[1].annualExpense);
+      expect(withEvents[2].annualExpense).toBe(withoutEvents[2].annualExpense + 5000000);
+      expect(withEvents[3].annualExpense).toBe(withoutEvents[3].annualExpense);
+    });
+
+    it('applies ongoing cost changes for the duration', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        lifeEvents: [
+          createLifeEvent({ id: 't2', name: '保育園', category: 'childcare', yearOffset: 1, annualCostChange: 600000, durationYears: 3 }),
+        ],
+      };
+      const withEvents = runSimulation(plan, 6);
+      const withoutEvents = runSimulation(defaultLifePlan, 6);
+      expect(withEvents[0].annualExpense).toBe(withoutEvents[0].annualExpense);
+      expect(withEvents[1].annualExpense).toBe(withoutEvents[1].annualExpense + 600000);
+      expect(withEvents[2].annualExpense).toBe(withoutEvents[2].annualExpense + 600000);
+      expect(withEvents[3].annualExpense).toBe(withoutEvents[3].annualExpense + 600000);
+      expect(withEvents[4].annualExpense).toBe(withoutEvents[4].annualExpense);
+    });
+
+    it('applies permanent income changes with durationYears=0', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        lifeEvents: [
+          createLifeEvent({ id: 't3', name: '転職', category: 'career', yearOffset: 3, person: 'self', annualIncomeChange: 1000000 }),
+        ],
+      };
+      const result = runSimulation(plan, 6);
+      const base = runSimulation(defaultLifePlan, 6);
+      expect(result[0].annualIncome).toBe(base[0].annualIncome);
+      expect(result[2].annualIncome).toBe(base[2].annualIncome);
+      expect(result[3].annualIncome).toBe(base[3].annualIncome + 1000000);
+      expect(result[5].annualIncome).toBe(base[5].annualIncome + 1000000);
+    });
+
+    it('records event names in the correct year', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        lifeEvents: [
+          createLifeEvent({ id: 't4', name: '出産', category: 'childbirth', yearOffset: 1, oneTimeCost: 500000, annualCostChange: 360000, durationYears: 3 }),
+        ],
+      };
+      const result = runSimulation(plan, 5);
+      expect(result[0].events).toEqual([]);
+      expect(result[1].events).toEqual(['出産']);
+      expect(result[2].events).toEqual([]);
+    });
+
+    it('applies event at yearOffset 0 (current year)', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        lifeEvents: [
+          createLifeEvent({ id: 'y0', name: '即時イベント', yearOffset: 0, oneTimeCost: 1000000, durationYears: 1 }),
+        ],
+      };
+      const result = runSimulation(plan, 3);
+      const base = runSimulation(defaultLifePlan, 3);
+      expect(result[0].annualExpense).toBe(base[0].annualExpense + 1000000);
+      expect(result[0].events).toEqual(['即時イベント']);
+      expect(result[1].annualExpense).toBe(base[1].annualExpense);
+    });
+
+    it('handles negative income change (retirement)', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        lifeEvents: [
+          createLifeEvent({ id: 'ret', name: '退職', category: 'retirement', yearOffset: 2, person: 'self', annualIncomeChange: -3000000 }),
+        ],
+      };
+      const result = runSimulation(plan, 5);
+      const base = runSimulation(defaultLifePlan, 5);
+      expect(result[2].annualIncome).toBe(base[2].annualIncome - 3000000);
+      expect(result[4].annualIncome).toBe(base[4].annualIncome - 3000000);
+    });
+
+    it('handles multiple events in the same year', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        lifeEvents: [
+          createLifeEvent({ id: 'a', name: '転職', category: 'career', yearOffset: 2, person: 'self', annualIncomeChange: 500000 }),
+          createLifeEvent({ id: 'b', name: '出産', category: 'childbirth', yearOffset: 2, oneTimeCost: 500000, annualCostChange: 300000, durationYears: 3 }),
+        ],
+      };
+      const result = runSimulation(plan, 5);
+      expect(result[2].events).toContain('転職');
+      expect(result[2].events).toContain('出産');
+      expect(result[2].events).toHaveLength(2);
     });
   });
 });

@@ -91,8 +91,9 @@ export default function LifeEventForm() {
 
   const applyTemplate = (category: LifeEventCategory) => {
     const template = EVENT_TEMPLATES[category];
+    const base = createEmptyEvent();
     setDraft({
-      ...draft,
+      ...base,
       category,
       ...(template ?? {}),
       id: draft.id,
