@@ -48,7 +48,7 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
   let currentInvestments = initialInvestments;
   let currentDebt = Math.max(0, initialDebt);
 
-  const lifeEvents = plan.lifeEvents ?? [];
+  const lifeEvents = plan.lifeEvents;
 
   const maxYears = Math.min(years, 100 - selfAge);
 
@@ -57,7 +57,6 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
     const age = selfAge + y;
     const sAge = spouseAge + y;
 
-    // Calculate life event impacts for this year
     let eventOneTimeCost = 0;
     let eventAnnualCostChange = 0;
     let eventAnnualIncomeChange = 0;
@@ -70,7 +69,6 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
         ? event.yearOffset + event.durationYears - 1
         : maxYears;
 
-      // One-time cost applies only in the start year
       if (y === eventStartYear) {
         eventOneTimeCost += event.oneTimeCost;
         const eventName = (event.name ?? '').trim();
@@ -79,7 +77,6 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
         }
       }
 
-      // Ongoing changes apply for the duration
       if (y >= eventStartYear && y <= eventEndYear) {
         eventAnnualCostChange += event.annualCostChange;
         eventAnnualIncomeChange += event.annualIncomeChange;
@@ -111,7 +108,7 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
       age,
       spouseAge: sAge,
       annualIncome,
-      annualExpense: annualExpense,
+      annualExpense,
       annualSavings,
       investmentGrowth,
       totalAssets,

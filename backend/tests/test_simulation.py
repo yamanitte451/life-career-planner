@@ -51,6 +51,10 @@ def _base_plan():
             "expectedReturn": 5,
             "nisaMonthly": 30000,
             "idecoMonthly": 23000,
+            "salaryGrowthRate": 0,
+            "inflationRate": 0,
+            "pensionMonthly": 0,
+            "pensionStartAge": 65,
         },
         "lifeEvents": [],
     }
@@ -376,3 +380,55 @@ class TestLifeEvents:
         plan_dict = schema.model_dump()
         result = run_simulation(plan_dict, years=3)
         assert len(result) == 3
+
+
+class TestPhase5:
+    def test_salary_growth_applied_cumulatively(self):
+        plan = _base_plan()
+        plan["income"] = {k: 0 for k in plan["income"]}
+        plan["income"]["selfAnnualIncome"] = 1000000
+        plan["expense"] = {k: 0 for k in plan["expense"]}
+        plan["assets"] = {k: 0 for k in plan["assets"]}
+        plan["debt"] = {k: 0 for k in plan["debt"]}
+        plan["investment"]["monthlyInvestment"] = 0
+        plan["investment"]["expectedReturn"] = 0
+        plan["investment"]["salaryGrowthRate"] = 10
+
+        result = run_simulation(plan, years=3)
+        assert abs(result[0]["annualIncome"] - 1000000) < 1       # 1000000 * 1.1^0
+        assert abs(result[1]["annualIncome"] - 1100000) < 1       # 1000000 * 1.1^1
+        assert abs(result[2]["annualIncome"] - 1210000) < 1       # 1000000 * 1.1^2
+
+    def test_inflation_applied_cumulatively(self):
+        plan = _base_plan()
+        plan["income"]["selfAnnualIncome"] = 10000000
+        plan["expense"] = {k: 0 for k in plan["expense"]}
+        plan["expense"]["travel"] = 100000
+        plan["assets"] = {k: 0 for k in plan["assets"]}
+        plan["debt"] = {k: 0 for k in plan["debt"]}
+        plan["investment"]["monthlyInvestment"] = 0
+        plan["investment"]["expectedReturn"] = 0
+        plan["investment"]["inflationRate"] = 10
+
+        result = run_simulation(plan, years=3)
+        assert abs(result[0]["annualExpense"] - 100000) < 1       # 100000 * 1.1^0
+        assert abs(result[1]["annualExpense"] - 110000) < 1       # 100000 * 1.1^1
+        assert abs(result[2]["annualExpense"] - 121000) < 1       # 100000 * 1.1^2
+
+    def test_pension_income_starts_at_pension_age(self):
+        plan = _base_plan()
+        plan["household"]["self"]["age"] = 63
+        plan["income"] = {k: 0 for k in plan["income"]}
+        plan["expense"] = {k: 0 for k in plan["expense"]}
+        plan["assets"] = {k: 0 for k in plan["assets"]}
+        plan["debt"] = {k: 0 for k in plan["debt"]}
+        plan["investment"]["monthlyInvestment"] = 0
+        plan["investment"]["expectedReturn"] = 0
+        plan["investment"]["pensionMonthly"] = 150000
+        plan["investment"]["pensionStartAge"] = 65
+
+        result = run_simulation(plan, years=4)
+        assert result[0]["annualIncome"] == 0       # age 63
+        assert result[1]["annualIncome"] == 0       # age 64
+        assert result[2]["annualIncome"] == 1800000 # age 65: 150000 * 12
+        assert result[3]["annualIncome"] == 1800000 # age 66

@@ -258,7 +258,6 @@ describe('runSimulation', () => {
       expect(result[2].events).toHaveLength(2);
     });
   });
-});
 
   describe('Phase 5: salary growth', () => {
     it('applies salary growth rate cumulatively', () => {
@@ -352,6 +351,7 @@ describe('runSimulation', () => {
       expect(results[0].annualIncome).toBeCloseTo(baseIncome, 0);
     });
   });
+});
 
 describe('formatCurrency', () => {
   it('formats oku (100M+) amounts', () => {
