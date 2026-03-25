@@ -61,6 +61,10 @@ export interface InvestmentPlan {
   expectedReturn: number;
   nisaMonthly: number;
   idecoMonthly: number;
+  salaryGrowthRate?: number; // annual salary growth rate (%)
+  inflationRate?: number; // annual expense inflation rate (%)
+  pensionMonthly?: number; // monthly pension income (yen)
+  pensionStartAge?: number; // age at which pension starts
 }
 
 export type LifeEventCategory =
