@@ -136,7 +136,7 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
 
   // 住宅ローン月返済額: 詳細パラメータが揃っていれば自動計算、なければ手動値を使用
   const mortgageMonthly =
-    plan.debt.mortgageInterestRate > 0 && plan.debt.mortgageLoanTermYears > 0 && plan.debt.mortgageLoan > 0
+    plan.debt.mortgageLoan > 0 && plan.debt.mortgageLoanTermYears > 0
       ? calculateMortgageMonthly(plan.debt.mortgageLoan, plan.debt.mortgageInterestRate, plan.debt.mortgageLoanTermYears)
       : plan.debt.mortgageMonthly;
 

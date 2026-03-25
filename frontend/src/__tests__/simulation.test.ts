@@ -267,7 +267,7 @@ describe('runSimulation', () => {
         expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 0, otherFixed: 0, otherVariable: 0 },
         assets: { savings: 0, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
         debt: { mortgageLoan: 0, mortgageMonthly: 0, mortgageInterestRate: 0, mortgageLoanTermYears: 0, carLoan: 0, studentLoan: 0, otherDebt: 0 },
-        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 10, inflationRate: 0, pensionMonthly: 0, pensionStartAge: 65 },
+        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 10, inflationRate: 0, pensionMonthly: 0, pensionStartAge: 65, enableTaxCalculation: false },
       };
       const results = runSimulation(plan, 3);
       // y=0: 1000000 * 1.1^0 = 1000000
@@ -301,7 +301,7 @@ describe('runSimulation', () => {
         expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 100000, otherFixed: 0, otherVariable: 0 },
         assets: { savings: 0, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
         debt: { mortgageLoan: 0, mortgageMonthly: 0, mortgageInterestRate: 0, mortgageLoanTermYears: 0, carLoan: 0, studentLoan: 0, otherDebt: 0 },
-        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 10, pensionMonthly: 0, pensionStartAge: 65 },
+        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 10, pensionMonthly: 0, pensionStartAge: 65, enableTaxCalculation: false },
       };
       const results = runSimulation(plan, 3);
       // y=0: 100000 * 1.1^0 = 100000
@@ -325,7 +325,7 @@ describe('runSimulation', () => {
         expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 0, otherFixed: 0, otherVariable: 0 },
         assets: { savings: 0, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
         debt: { mortgageLoan: 0, mortgageMonthly: 0, mortgageInterestRate: 0, mortgageLoanTermYears: 0, carLoan: 0, studentLoan: 0, otherDebt: 0 },
-        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 0, pensionMonthly: 150000, pensionStartAge: 65 },
+        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 0, pensionMonthly: 150000, pensionStartAge: 65, enableTaxCalculation: false },
       };
       const results = runSimulation(plan, 4);
       // age 63: no pension

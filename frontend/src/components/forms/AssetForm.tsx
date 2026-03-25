@@ -39,7 +39,6 @@ export default function AssetForm() {
   // 住宅ローン詳細計算
   const hasDetailedMortgage =
     debt.mortgageLoan > 0 &&
-    debt.mortgageInterestRate > 0 &&
     debt.mortgageLoanTermYears > 0;
   const calculatedMonthly = hasDetailedMortgage
     ? calculateMortgageMonthly(debt.mortgageLoan, debt.mortgageInterestRate, debt.mortgageLoanTermYears)

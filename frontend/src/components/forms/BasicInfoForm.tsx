@@ -229,8 +229,23 @@ export default function BasicInfoForm() {
   const { household } = plan;
   const children = household.children ?? [];
 
+  const familyCompositionFromCount = (count: number): string => {
+    if (count === 0) return '夫婦のみ';
+    if (count === 1) return '子ども1人';
+    if (count === 2) return '子ども2人';
+    return '子ども3人以上';
+  };
+
   const addChild = () => {
-    updatePlan({ household: { ...household, children: [...children, defaultChild()] } });
+    const updated = [...children, defaultChild()];
+    updatePlan({
+      household: {
+        ...household,
+        children: updated,
+        hasChildren: true,
+        familyComposition: familyCompositionFromCount(updated.length),
+      },
+    });
   };
 
   const updateChild = (index: number, child: ChildInfo) => {
@@ -241,7 +256,14 @@ export default function BasicInfoForm() {
 
   const removeChild = (index: number) => {
     const updated = children.filter((_, i) => i !== index);
-    updatePlan({ household: { ...household, children: updated } });
+    updatePlan({
+      household: {
+        ...household,
+        children: updated,
+        hasChildren: updated.length > 0,
+        familyComposition: familyCompositionFromCount(updated.length),
+      },
+    });
   };
 
   return (
