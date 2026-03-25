@@ -82,6 +82,10 @@ class InvestmentSchema(BaseModel):
     expectedReturn: float = 5
     nisaMonthly: float = 0
     idecoMonthly: float = 0
+    salaryGrowthRate: float = 0
+    inflationRate: float = 0
+    pensionMonthly: float = 0
+    pensionStartAge: int = 65
 
 
 class LifeEventCategoryEnum(str, Enum):

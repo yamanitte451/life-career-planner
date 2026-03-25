@@ -78,7 +78,7 @@ describe('runSimulation', () => {
       expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 0, otherFixed: 0, otherVariable: 0 },
       assets: { savings: 0, securities: 1000000, nisa: 0, ideco: 0, cash: 0, other: 0 },
       debt: { mortgageLoan: 0, mortgageMonthly: 0, carLoan: 0, studentLoan: 0, otherDebt: 0 },
-      investment: { monthlyInvestment: 0, expectedReturn: 10, nisaMonthly: 0, idecoMonthly: 0 },
+      investment: { monthlyInvestment: 0, expectedReturn: 10, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 0, pensionMonthly: 0, pensionStartAge: 65 },
     };
     const results = runSimulation(plan, 2);
     // Year 1: 1000000 * 1.10 = 1100000
@@ -94,7 +94,7 @@ describe('runSimulation', () => {
       expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 0, otherFixed: 0, otherVariable: 0 },
       assets: { savings: 0, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
       debt: { mortgageLoan: 10000000, mortgageMonthly: 100000, carLoan: 0, studentLoan: 0, otherDebt: 0 },
-      investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0 },
+      investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 0, pensionMonthly: 0, pensionStartAge: 65 },
     };
     const results = runSimulation(plan, 3);
     // mortgageMonthly * 12 = 1200000/year
@@ -109,7 +109,7 @@ describe('runSimulation', () => {
       expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 0, otherFixed: 0, otherVariable: 0 },
       assets: { savings: 0, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
       debt: { mortgageLoan: 500000, mortgageMonthly: 100000, carLoan: 0, studentLoan: 0, otherDebt: 0 },
-      investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0 },
+      investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 0, pensionMonthly: 0, pensionStartAge: 65 },
     };
     const results = runSimulation(plan, 3);
     expect(results[0].totalDebt).toBe(0);
@@ -123,7 +123,7 @@ describe('runSimulation', () => {
       expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 0, otherFixed: 0, otherVariable: 0 },
       assets: { savings: 1000000, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
       debt: { mortgageLoan: 0, mortgageMonthly: 0, carLoan: 0, studentLoan: 0, otherDebt: 0 },
-      investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0 },
+      investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 0, pensionMonthly: 0, pensionStartAge: 65 },
     };
     const results = runSimulation(plan, 5);
     expect(results.length).toBe(5);
@@ -259,6 +259,99 @@ describe('runSimulation', () => {
     });
   });
 });
+
+  describe('Phase 5: salary growth', () => {
+    it('applies salary growth rate cumulatively', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        income: { selfAnnualIncome: 1000000, spouseAnnualIncome: 0, selfBonus: 0, spouseBonus: 0, sideJobIncome: 0, otherIncome: 0 },
+        expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 0, otherFixed: 0, otherVariable: 0 },
+        assets: { savings: 0, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
+        debt: { mortgageLoan: 0, mortgageMonthly: 0, carLoan: 0, studentLoan: 0, otherDebt: 0 },
+        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 10, inflationRate: 0, pensionMonthly: 0, pensionStartAge: 65 },
+      };
+      const results = runSimulation(plan, 3);
+      // y=0: 1000000 * 1.1^0 = 1000000
+      expect(results[0].annualIncome).toBeCloseTo(1000000, 0);
+      // y=1: 1000000 * 1.1^1 = 1100000
+      expect(results[1].annualIncome).toBeCloseTo(1100000, 0);
+      // y=2: 1000000 * 1.1^2 = 1210000
+      expect(results[2].annualIncome).toBeCloseTo(1210000, 0);
+    });
+
+    it('zero salary growth rate has no effect', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        investment: { ...defaultLifePlan.investment, salaryGrowthRate: 0 },
+      };
+      const results = runSimulation(plan, 5);
+      const baseIncome = defaultLifePlan.income.selfAnnualIncome + defaultLifePlan.income.spouseAnnualIncome +
+        defaultLifePlan.income.selfBonus + defaultLifePlan.income.spouseBonus +
+        defaultLifePlan.income.sideJobIncome + defaultLifePlan.income.otherIncome;
+      results.forEach((row) => {
+        expect(row.annualIncome).toBeCloseTo(baseIncome, 0);
+      });
+    });
+  });
+
+  describe('Phase 5: inflation rate', () => {
+    it('applies inflation rate cumulatively to base expenses', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        income: { selfAnnualIncome: 10000000, spouseAnnualIncome: 0, selfBonus: 0, spouseBonus: 0, sideJobIncome: 0, otherIncome: 0 },
+        expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 100000, otherFixed: 0, otherVariable: 0 },
+        assets: { savings: 0, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
+        debt: { mortgageLoan: 0, mortgageMonthly: 0, carLoan: 0, studentLoan: 0, otherDebt: 0 },
+        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 10, pensionMonthly: 0, pensionStartAge: 65 },
+      };
+      const results = runSimulation(plan, 3);
+      // y=0: 100000 * 1.1^0 = 100000
+      expect(results[0].annualExpense).toBeCloseTo(100000, 0);
+      // y=1: 100000 * 1.1^1 = 110000
+      expect(results[1].annualExpense).toBeCloseTo(110000, 0);
+      // y=2: 100000 * 1.1^2 = 121000
+      expect(results[2].annualExpense).toBeCloseTo(121000, 0);
+    });
+  });
+
+  describe('Phase 5: pension income', () => {
+    it('adds pension income from pensionStartAge', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        household: {
+          ...defaultLifePlan.household,
+          self: { ...defaultLifePlan.household.self, age: 63 },
+        },
+        income: { selfAnnualIncome: 0, spouseAnnualIncome: 0, selfBonus: 0, spouseBonus: 0, sideJobIncome: 0, otherIncome: 0 },
+        expense: { housing: 0, food: 0, utilities: 0, communication: 0, insurance: 0, car: 0, dailyGoods: 0, entertainment: 0, travel: 0, otherFixed: 0, otherVariable: 0 },
+        assets: { savings: 0, securities: 0, nisa: 0, ideco: 0, cash: 0, other: 0 },
+        debt: { mortgageLoan: 0, mortgageMonthly: 0, carLoan: 0, studentLoan: 0, otherDebt: 0 },
+        investment: { monthlyInvestment: 0, expectedReturn: 0, nisaMonthly: 0, idecoMonthly: 0, salaryGrowthRate: 0, inflationRate: 0, pensionMonthly: 150000, pensionStartAge: 65 },
+      };
+      const results = runSimulation(plan, 4);
+      // age 63: no pension
+      expect(results[0].annualIncome).toBe(0);
+      // age 64: no pension
+      expect(results[1].annualIncome).toBe(0);
+      // age 65: pension starts (150000 * 12 = 1800000)
+      expect(results[2].annualIncome).toBe(1800000);
+      // age 66: pension continues
+      expect(results[3].annualIncome).toBe(1800000);
+    });
+
+    it('zero pension monthly has no effect', () => {
+      const plan: LifePlan = {
+        ...defaultLifePlan,
+        investment: { ...defaultLifePlan.investment, pensionMonthly: 0, pensionStartAge: 65 },
+      };
+      const results = runSimulation(plan, 5);
+      const baseIncome = defaultLifePlan.income.selfAnnualIncome + defaultLifePlan.income.spouseAnnualIncome +
+        defaultLifePlan.income.selfBonus + defaultLifePlan.income.spouseBonus +
+        defaultLifePlan.income.sideJobIncome + defaultLifePlan.income.otherIncome;
+      // Year 0, growth factor = 1 (defaultLifePlan has salaryGrowthRate=1%)
+      expect(results[0].annualIncome).toBeCloseTo(baseIncome, 0);
+    });
+  });
 
 describe('formatCurrency', () => {
   it('formats oku (100M+) amounts', () => {

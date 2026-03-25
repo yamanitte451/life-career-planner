@@ -39,6 +39,10 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
   const annualDebtRepayment = plan.debt.mortgageMonthly * 12;
   const annualInvestment = plan.investment.monthlyInvestment * 12;
   const returnRate = plan.investment.expectedReturn / 100;
+  const salaryGrowthRate = plan.investment.salaryGrowthRate / 100;
+  const inflationRate = plan.investment.inflationRate / 100;
+  const pensionMonthly = plan.investment.pensionMonthly;
+  const pensionStartAge = plan.investment.pensionStartAge;
 
   let currentSavings = initialSavings;
   let currentInvestments = initialInvestments;
@@ -82,8 +86,13 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
       }
     }
 
-    const annualIncome = baseAnnualIncome + eventAnnualIncomeChange;
-    const annualExpense = baseAnnualExpense + eventAnnualCostChange + eventOneTimeCost;
+    // Phase 5: apply salary growth and inflation cumulatively
+    const growthFactor = Math.pow(1 + salaryGrowthRate, y);
+    const inflationFactor = Math.pow(1 + inflationRate, y);
+    const pensionIncome = age >= pensionStartAge ? pensionMonthly * 12 : 0;
+
+    const annualIncome = baseAnnualIncome * growthFactor + eventAnnualIncomeChange + pensionIncome;
+    const annualExpense = baseAnnualExpense * inflationFactor + eventAnnualCostChange + eventOneTimeCost;
 
     const investmentGrowth = currentInvestments * returnRate;
     currentInvestments = currentInvestments * (1 + returnRate) + annualInvestment;
@@ -102,7 +111,7 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
       age,
       spouseAge: sAge,
       annualIncome,
-      annualExpense: annualExpense + annualInvestment + annualDebtRepayment,
+      annualExpense: annualExpense,
       annualSavings,
       investmentGrowth,
       totalAssets,

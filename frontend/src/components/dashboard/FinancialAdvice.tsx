@@ -50,8 +50,7 @@ export function generateAdvice(plan: LifePlan): Advice[] {
     plan.debt.otherDebt;
 
   const annualInvestment = plan.investment.monthlyInvestment * 12;
-  const annualDebtRepayment =
-    (plan.debt as any).annualRepayment ?? 0;
+  const annualDebtRepayment = plan.debt.mortgageMonthly * 12;
   const annualSavings =
     totalAnnualIncome - annualExpense - annualInvestment - annualDebtRepayment;
   const savingsRate = totalAnnualIncome > 0 ? annualSavings / totalAnnualIncome : 0;

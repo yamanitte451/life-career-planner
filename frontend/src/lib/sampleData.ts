@@ -65,6 +65,10 @@ export const sampleLifePlan: LifePlan = {
     expectedReturn: 5,
     nisaMonthly: 33333,
     idecoMonthly: 23000,
+    salaryGrowthRate: 1,
+    inflationRate: 1,
+    pensionMonthly: 150000,
+    pensionStartAge: 65,
   },
   lifeEvents: [],
 };

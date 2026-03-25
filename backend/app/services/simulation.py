@@ -43,6 +43,12 @@ def run_simulation(plan: Dict[str, Any], years: int = 30) -> List[Dict]:
     annual_investment = investment.get("monthlyInvestment", 0) * 12
     return_rate = investment.get("expectedReturn", 5) / 100
 
+    # Phase 5: advanced simulation parameters
+    salary_growth_rate = investment.get("salaryGrowthRate", 0) / 100
+    inflation_rate = investment.get("inflationRate", 0) / 100
+    pension_monthly = investment.get("pensionMonthly", 0)
+    pension_start_age = investment.get("pensionStartAge", 65)
+
     max_years = min(years, 100 - self_age)
     results = []
 
@@ -75,8 +81,13 @@ def run_simulation(plan: Dict[str, Any], years: int = 30) -> List[Dict]:
                 event_annual_cost_change += event.get("annualCostChange", 0)
                 event_annual_income_change += event.get("annualIncomeChange", 0)
 
-        annual_income = base_annual_income + event_annual_income_change
-        annual_expense = base_annual_expense + event_annual_cost_change + event_one_time_cost
+        # Phase 5: apply salary growth and inflation cumulatively
+        growth_factor = (1 + salary_growth_rate) ** y
+        inflation_factor = (1 + inflation_rate) ** y
+        pension_income = pension_monthly * 12 if age >= pension_start_age else 0
+
+        annual_income = base_annual_income * growth_factor + event_annual_income_change + pension_income
+        annual_expense = base_annual_expense * inflation_factor + event_annual_cost_change + event_one_time_cost
 
         investment_growth = current_investments * return_rate
         current_investments = current_investments * (1 + return_rate) + annual_investment
@@ -95,7 +106,7 @@ def run_simulation(plan: Dict[str, Any], years: int = 30) -> List[Dict]:
             "age": age,
             "spouseAge": s_age,
             "annualIncome": annual_income,
-            "annualExpense": annual_expense + annual_investment + annual_debt_repayment,
+            "annualExpense": annual_expense,
             "annualSavings": annual_savings,
             "investmentGrowth": investment_growth,
             "totalAssets": total_assets,
