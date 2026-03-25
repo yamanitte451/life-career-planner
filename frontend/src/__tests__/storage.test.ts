@@ -81,6 +81,31 @@ describe('scenario storage', () => {
       const loaded = loadScenarios();
       expect(loaded[0].plan.income.selfAnnualIncome).toBe(9999999);
     });
+
+    it('preserves createdAt timestamp', () => {
+      const sc = makeScenario({ createdAt: 1234567890 });
+      saveScenario(sc);
+      const loaded = loadScenarios();
+      expect(loaded[0].createdAt).toBe(1234567890);
+    });
+
+    it('preserves order: new scenario is appended at the end', () => {
+      saveScenario(makeScenario({ id: 'first', name: '最初' }));
+      saveScenario(makeScenario({ id: 'second', name: '二番目' }));
+      const loaded = loadScenarios();
+      expect(loaded[0].id).toBe('first');
+      expect(loaded[1].id).toBe('second');
+    });
+
+    it('overwrite preserves position in list', () => {
+      saveScenario(makeScenario({ id: 'a', name: 'A' }));
+      saveScenario(makeScenario({ id: 'b', name: 'B' }));
+      saveScenario(makeScenario({ id: 'a', name: 'A更新' }));
+      const loaded = loadScenarios();
+      expect(loaded).toHaveLength(2);
+      expect(loaded[0].name).toBe('A更新');
+      expect(loaded[1].name).toBe('B');
+    });
   });
 
   describe('deleteScenario', () => {
@@ -102,6 +127,11 @@ describe('scenario storage', () => {
     it('results in empty list after deleting the only scenario', () => {
       saveScenario(makeScenario({ id: 'only', name: '唯一' }));
       deleteScenario('only');
+      expect(loadScenarios()).toEqual([]);
+    });
+
+    it('does nothing when list is already empty', () => {
+      expect(() => deleteScenario('ghost')).not.toThrow();
       expect(loadScenarios()).toEqual([]);
     });
   });

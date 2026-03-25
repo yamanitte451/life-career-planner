@@ -11,15 +11,19 @@ function generateId(): string {
 interface Props {
   compareScenarioId: string | null;
   onCompareChange: (id: string | null) => void;
+  onScenariosChange?: () => void;
 }
 
-export default function ScenarioPanel({ compareScenarioId, onCompareChange }: Props) {
+export default function ScenarioPanel({ compareScenarioId, onCompareChange, onScenariosChange }: Props) {
   const { plan, updatePlan } = usePlan();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [saveName, setSaveName] = useState('');
   const [expanded, setExpanded] = useState(false);
 
-  const refresh = useCallback(() => setScenarios(loadScenarios()), []);
+  const refresh = useCallback(() => {
+    setScenarios(loadScenarios());
+    onScenariosChange?.();
+  }, [onScenariosChange]);
 
   useEffect(() => {
     refresh();

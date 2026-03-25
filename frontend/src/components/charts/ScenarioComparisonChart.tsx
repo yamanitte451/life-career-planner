@@ -12,6 +12,13 @@ import {
 import { SimulationYearData } from '../../lib/types';
 import { formatMan } from '../../lib/simulation';
 
+function formatYAxis(v: number): string {
+  if (Math.abs(v) >= 100000000) {
+    return `${(v / 100000000).toFixed(0)}億`;
+  }
+  return `${Math.round(v / 10000)}万`;
+}
+
 interface Props {
   data1: SimulationYearData[];
   label1: string;
@@ -56,7 +63,7 @@ export default function ScenarioComparisonChart({ data1, label1, data2, label2, 
         <LineChart data={chartData} margin={{ top: 10, right: 10, left: 20, bottom: 60 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="year" angle={-45} textAnchor="end" tick={{ fontSize: 11 }} />
-          <YAxis tickFormatter={(v) => `${Math.abs(v) >= 100000000 ? `${(v / 100000000).toFixed(0)}億` : `${Math.round(v / 10000)}万`}`} tick={{ fontSize: 11 }} />
+          <YAxis tickFormatter={formatYAxis} tick={{ fontSize: 11 }} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '80px' }} />
           <Line

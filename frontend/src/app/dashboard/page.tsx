@@ -1,8 +1,9 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { usePlan } from '../../context/PlanContext';
 import { runSimulation, formatMan } from '../../lib/simulation';
 import { loadScenarios } from '../../lib/storage';
+import { Scenario } from '../../lib/types';
 import SummaryCards from '../../components/dashboard/SummaryCards';
 import FinancialAdvice from '../../components/dashboard/FinancialAdvice';
 import AssetProjectionChart from '../../components/charts/AssetProjectionChart';
@@ -17,16 +18,18 @@ export default function DashboardPage() {
   const { plan } = usePlan();
   const [selectedYears, setSelectedYears] = useState(30);
   const [compareScenarioId, setCompareScenarioId] = useState<string | null>(null);
+  const [scenarios, setScenarios] = useState<Scenario[]>(() => loadScenarios());
+
+  const handleScenariosChange = useCallback(() => {
+    setScenarios(loadScenarios());
+  }, []);
 
   const simulationData = useMemo(() => runSimulation(plan, 30), [plan]);
   const currentData = simulationData[0];
 
   const compareScenario = useMemo(
-    () =>
-      compareScenarioId
-        ? loadScenarios().find((s) => s.id === compareScenarioId) ?? null
-        : null,
-    [compareScenarioId]
+    () => (compareScenarioId ? scenarios.find((s) => s.id === compareScenarioId) ?? null : null),
+    [compareScenarioId, scenarios]
   );
   const compareData = useMemo(
     () => (compareScenario ? runSimulation(compareScenario.plan, 30) : null),
@@ -60,6 +63,7 @@ export default function DashboardPage() {
         <ScenarioPanel
           compareScenarioId={compareScenarioId}
           onCompareChange={setCompareScenarioId}
+          onScenariosChange={handleScenariosChange}
         />
 
         {/* Scenario Comparison Section */}
