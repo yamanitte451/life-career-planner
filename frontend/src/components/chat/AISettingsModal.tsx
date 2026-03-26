@@ -57,8 +57,11 @@ export default function AISettingsModal({ open, onClose, onSave }: Props) {
               placeholder="sk-..."
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            <p className="text-xs text-gray-400 mt-1">
-              APIキーはブラウザのローカルストレージに保存され、このアプリのサーバーには送信されません。OpenAI API を利用する際には OpenAI に送信されます。ローカルストレージに保存されたキーは同一ブラウザ上の他の拡張機能等から参照される可能性があるため、ご自身の責任で管理してください。
+            <p className="text-xs text-amber-600 mt-1">
+              ⚠ APIキーはブラウザのローカルストレージに平文で保存されます。
+              XSS攻撃やブラウザ拡張機能から読み取られるリスクがあります。
+              利用額上限の設定や、専用のAPIキーの使用を推奨します。
+              キーはOpenAI APIへの通信にのみ使用され、このアプリのサーバーには送信されません。
             </p>
           </div>
 

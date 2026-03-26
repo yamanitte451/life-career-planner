@@ -28,6 +28,7 @@ export async function sendMessageStream(
   ];
 
   try {
+    // TODO: Phase 4 でバックエンドプロキシに移行し、APIキーをサーバー側で管理する
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {

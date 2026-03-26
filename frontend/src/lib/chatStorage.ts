@@ -15,7 +15,9 @@ export function loadChatConfig(): AIChatConfig | null {
   try {
     const raw = localStorage.getItem(CONFIG_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as AIChatConfig;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null || !parsed.apiKey) return null;
+    return parsed as AIChatConfig;
   } catch {
     return null;
   }
@@ -40,7 +42,8 @@ export function loadChatSessions(): ChatSession[] {
   try {
     const raw = localStorage.getItem(SESSIONS_KEY);
     if (!raw) return [];
-    return JSON.parse(raw) as ChatSession[];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
