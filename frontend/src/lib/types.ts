@@ -127,6 +127,30 @@ export interface Scenario {
   plan: LifePlan;
 }
 
+// --- AI Chat types ---
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: number;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: number;
+}
+
+export interface AIChatConfig {
+  provider: 'openai';
+  apiKey: string;
+  model: string;
+}
+
+// --- Simulation types ---
+
 export interface SimulationYearData {
   year: number;
   age: number;

@@ -32,6 +32,10 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Run tests
+        working-directory: frontend
+        run: npm test
+
       - name: Build (static export)
         working-directory: frontend
         env:
