@@ -37,7 +37,7 @@ export function calculatePersonAnnualTax(salary: number, spouseIncome: number): 
   const socialInsurance = Math.floor(salary * 0.1475);
   const employmentDeduction = calcEmploymentIncomeDeduction(salary);
   const employmentIncome = Math.max(0, salary - employmentDeduction);
-  const spouseDeduction = spouseIncome < 1030000 ? 380000 : 0;
+  const spouseDeduction = spouseIncome <= 1030000 ? 380000 : 0; // 103万円以下
   const taxableIncome = Math.max(0, employmentIncome - socialInsurance - 480000 - spouseDeduction);
   const incomeTax = calcIncomeTax(taxableIncome);
   const residentTax = Math.max(0, Math.floor(taxableIncome * 0.10) + 5000);
@@ -195,10 +195,14 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
 
     const annualIncome = baseAnnualIncome * growthFactor + eventAnnualIncomeChange + pensionIncome;
 
-    // 税金・社会保険料の計算
+    // 税金・社会保険料の計算（簡易）
+    // 副業・その他収入は本人側に合算して計算。
+    // ライフイベントによる収入変化・年金収入は簡易計算のため除外。
     let annualTax = 0;
     if (enableTax) {
-      const selfSalary = (plan.income.selfAnnualIncome + plan.income.selfBonus) * growthFactor;
+      const selfSalary =
+        (plan.income.selfAnnualIncome + plan.income.selfBonus + plan.income.sideJobIncome + plan.income.otherIncome) *
+        growthFactor;
       const spouseSalary = (plan.income.spouseAnnualIncome + plan.income.spouseBonus) * growthFactor;
       annualTax =
         calculatePersonAnnualTax(selfSalary, spouseSalary) +
@@ -225,8 +229,15 @@ export function runSimulation(plan: LifePlan, years: number = 30): SimulationYea
       annualIncome - annualTax - annualExpense - annualInvestment - annualDebtRepayment;
     currentSavings = currentSavings + annualSavings;
 
-    const debtPaid = Math.min(currentDebt, annualDebtRepayment);
-    currentDebt = Math.max(0, currentDebt - debtPaid);
+    // 住宅ローン残高更新: 詳細計算モードでは元本のみ残高から減算（利息はキャッシュフロー上は支払済）
+    if (plan.debt.mortgageLoanTermYears > 0 && currentDebt > 0) {
+      const annualInterest = currentDebt * (plan.debt.mortgageInterestRate / 100);
+      const annualPrincipal = Math.max(0, annualDebtRepayment - annualInterest);
+      currentDebt = Math.max(0, currentDebt - annualPrincipal);
+    } else {
+      const debtPaid = Math.min(currentDebt, annualDebtRepayment);
+      currentDebt = Math.max(0, currentDebt - debtPaid);
+    }
 
     const totalAssets = Math.max(0, currentSavings) + currentInvestments;
     const netAssets = totalAssets - currentDebt;

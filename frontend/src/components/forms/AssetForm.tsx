@@ -44,7 +44,9 @@ export default function AssetForm() {
     ? calculateMortgageMonthly(debt.mortgageLoan, debt.mortgageInterestRate, debt.mortgageLoanTermYears)
     : null;
   const totalInterest = hasDetailedMortgage && calculatedMonthly !== null
-    ? calculatedMonthly * debt.mortgageLoanTermYears * 12 - debt.mortgageLoan
+    ? (debt.mortgageInterestRate <= 0
+      ? 0
+      : calculatedMonthly * debt.mortgageLoanTermYears * 12 - debt.mortgageLoan)
     : null;
 
   const applyCalculatedMonthly = () => {

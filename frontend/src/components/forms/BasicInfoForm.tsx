@@ -295,7 +295,17 @@ export default function BasicInfoForm() {
             <select
               className="w-full border rounded-lg px-3 py-2"
               value={household.familyComposition}
-              onChange={(e) => updatePlan({ household: { ...household, familyComposition: e.target.value, hasChildren: e.target.value !== '夫婦のみ' } })}
+              onChange={(e) => {
+                const composition = e.target.value;
+                updatePlan({
+                  household: {
+                    ...household,
+                    familyComposition: composition,
+                    hasChildren: composition !== '夫婦のみ',
+                    children: composition === '夫婦のみ' ? [] : household.children,
+                  },
+                });
+              }}
             >
               {familyCompositions.map((f) => <option key={f}>{f}</option>)}
             </select>

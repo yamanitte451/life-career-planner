@@ -562,7 +562,9 @@ describe('mortgage auto-calculation in simulation', () => {
     };
     const results = runSimulation(plan, 1);
     const expectedMonthly = calculateMortgageMonthly(30000000, 1.5, 35);
-    // debt should decrease by calculated monthly * 12
-    expect(results[0].totalDebt).toBe(30000000 - expectedMonthly * 12);
+    // 詳細計算モード: 元本のみ残高から減算（元本返済 = 支払額 - 利息）
+    const annualInterest = 30000000 * 0.015;
+    const annualPrincipal = expectedMonthly * 12 - annualInterest;
+    expect(results[0].totalDebt).toBe(30000000 - annualPrincipal);
   });
 });
