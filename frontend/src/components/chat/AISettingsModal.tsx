@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AIChatConfig } from '../../lib/types';
 import { loadChatConfig, saveChatConfig } from '../../lib/chatStorage';
 
@@ -32,6 +32,17 @@ export default function AISettingsModal({ open, onClose, onSave }: Props) {
     }
   }, [open]);
 
+  const handleKeyDown = useCallback((e: globalThis.KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [open, handleKeyDown]);
+
   if (!open) return null;
 
   const handleSave = () => {
@@ -41,9 +52,9 @@ export default function AISettingsModal({ open, onClose, onSave }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="dialog" aria-modal="true" aria-labelledby="ai-settings-title">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">AI設定</h2>
+        <h2 id="ai-settings-title" className="text-lg font-bold text-gray-800 mb-4">AI設定</h2>
 
         <div className="space-y-4">
           <div>

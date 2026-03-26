@@ -37,8 +37,9 @@ export default function ChatPanel() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingContent]);
+    const behavior = isStreaming ? 'auto' : 'smooth';
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  }, [messages, streamingContent, isStreaming]);
 
   const saveCurrentSession = useCallback((msgs: ChatMessageType[]) => {
     if (msgs.length === 0) return;
