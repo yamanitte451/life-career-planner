@@ -149,6 +149,22 @@ export interface AIChatConfig {
   model: string;
 }
 
+// --- AI Proposal types ---
+
+export interface AIProposal {
+  id: string;
+  title: string;
+  description: string;
+  changes: PlanChange[];
+}
+
+export interface PlanChange {
+  path: string;
+  value: number;
+  delta?: number;
+  label: string;
+}
+
 // --- Simulation types ---
 
 export interface SimulationYearData {

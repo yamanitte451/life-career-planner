@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import './globals.css';
 import { PlanProvider } from '../context/PlanContext';
+import Navigation from '../components/layout/Navigation';
 
 export const metadata: Metadata = {
   title: '夫婦のライフプランナー',
@@ -13,14 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ja">
       <body className="font-sans">
         <PlanProvider>
-          <nav className="bg-indigo-700 text-white px-6 py-3 flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold">💑 ライフプランナー</Link>
-            <div className="flex gap-4 text-sm">
-              <Link href="/setup" className="hover:text-indigo-200">プラン設定</Link>
-              <Link href="/dashboard" className="hover:text-indigo-200">ダッシュボード</Link>
-              <Link href="/chat" className="hover:text-indigo-200">AI相談</Link>
-            </div>
-          </nav>
+          <Navigation />
           <main>{children}</main>
         </PlanProvider>
       </body>
