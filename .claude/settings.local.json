@@ -19,7 +19,15 @@
       "Bash(git -C /c/workspace/claude/life-carrer-planner status)",
       "Bash(git -C /c/workspace/claude/life-carrer-planner log --oneline -5)",
       "Bash(git -C /c/workspace/claude/life-carrer-planner add .claude/)",
-      "Bash(git -C:*)"
+      "Bash(git -C:*)",
+      "Bash(wc -l /c/workspace/claude/life-carrer-planner/backend/tests/*.py)",
+      "Bash(npm ls:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx next:*)",
+      "Bash(gh pr:*)",
+      "Bash(where gh:*)",
+      "Bash(gh api:*)"
     ]
   }
 }
