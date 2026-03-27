@@ -57,7 +57,7 @@ function ProposalCard({
       </div>
       <div className="space-y-1 mb-3">
         {proposal.changes.map((change, i) => (
-          <div key={`${change.path}:${change.value}`} className="flex items-center gap-2 text-xs text-gray-700 bg-white rounded px-2 py-1">
+          <div key={`${change.path}:${change.value}:${change.label ?? ''}:${i}`} className="flex items-center gap-2 text-xs text-gray-700 bg-white rounded px-2 py-1">
             <span className="font-medium">{change.label}</span>
             <span className="text-gray-400">→</span>
             <span className="font-semibold text-blue-700">{formatChangeValue(change.path, change.value)}</span>

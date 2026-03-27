@@ -45,11 +45,11 @@ export function parseProposals(content: string): ParseResult {
       const json = JSON.parse(match[1]);
       const rawChanges = Array.isArray(json.changes) ? json.changes : [];
       const changes: PlanChange[] = rawChanges
-        .filter((c: any) => c && c.value != null && !Number.isNaN(Number(c.value)))
+        .filter((c: any) => c && c.path && Number.isFinite(Number(c.value)))
         .map((c: PlanChange) => ({
-          path: String(c.path || ''),
+          path: String(c.path),
           value: Number(c.value),
-          delta: c.delta != null ? safeNumber(c.delta, 0) : undefined,
+          delta: c.delta != null && Number.isFinite(Number(c.delta)) ? Number(c.delta) : undefined,
           label: String(c.label || c.path || ''),
         }));
 

@@ -212,16 +212,9 @@ export default function ChatPanel() {
         <>
           <div
             className="fixed inset-0 bg-black/30 z-40 lg:hidden"
-            role="button"
-            aria-label="履歴パネルを閉じる"
-            tabIndex={0}
+            aria-hidden="true"
+            tabIndex={-1}
             onClick={() => setShowSessionDrawer(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setShowSessionDrawer(false);
-              }
-            }}
           />
           <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-xl z-50 lg:hidden flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
