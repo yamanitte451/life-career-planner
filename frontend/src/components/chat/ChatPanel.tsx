@@ -44,6 +44,13 @@ export default function ChatPanel() {
     messagesEndRef.current?.scrollIntoView({ behavior });
   }, [messages, streamingContent, isStreaming]);
 
+  useEffect(() => {
+    if (!showSessionDrawer) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowSessionDrawer(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [showSessionDrawer]);
+
   const saveCurrentSession = useCallback((msgs: ChatMessageType[]) => {
     if (msgs.length === 0) return;
     const existing = loadChatSessions().find((s) => s.id === sessionId);
@@ -154,17 +161,19 @@ export default function ChatPanel() {
   };
 
   const handleApplyProposal = useCallback((proposal: AIProposal) => {
-    updatePlan((prevPlan) => {
-      const updates = applyProposalToPlan(prevPlan, proposal);
-      if (Object.keys(updates).length > 0) {
-        setAppliedProposalIds((prev) => new Set(prev).add(proposal.id));
-        setError(null);
-      } else {
-        setError('この提案は反映できる項目がありません');
-      }
-      return updates;
-    });
-  }, [updatePlan]);
+    const updates = applyProposalToPlan(plan, proposal);
+    if (Object.keys(updates).length > 0) {
+      setAppliedProposalIds((prev) => {
+        const next = new Set(prev);
+        next.add(proposal.id);
+        return next;
+      });
+      setError(null);
+    } else {
+      setError('この提案は反映できる項目がありません');
+    }
+    updatePlan(updates);
+  }, [plan, updatePlan]);
 
   const hasApiKey = !!config?.apiKey;
 
@@ -224,13 +233,6 @@ export default function ChatPanel() {
             aria-modal="true"
             aria-labelledby="chat-session-drawer-title"
             tabIndex={-1}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                e.stopPropagation();
-                e.preventDefault();
-                setShowSessionDrawer(false);
-              }
-            }}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
               <p id="chat-session-drawer-title" className="text-sm font-semibold text-gray-700">チャット履歴</p>
