@@ -4,9 +4,11 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { LifePlan } from '../lib/types';
 import { loadPlan, savePlan, defaultLifePlan } from '../lib/storage';
 
+type PlanUpdater = Partial<LifePlan> | ((prev: LifePlan) => Partial<LifePlan>);
+
 interface PlanContextType {
   plan: LifePlan;
-  updatePlan: (updates: Partial<LifePlan>) => void;
+  updatePlan: (updates: PlanUpdater) => void;
   resetPlan: () => void;
 }
 
@@ -23,9 +25,10 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     setPlan(loadPlan());
   }, []);
 
-  const updatePlan = (updates: Partial<LifePlan>) => {
+  const updatePlan = (updates: PlanUpdater) => {
     setPlan((prev) => {
-      const next = { ...prev, ...updates };
+      const partial = typeof updates === 'function' ? updates(prev) : updates;
+      const next = { ...prev, ...partial };
       savePlan(next);
       return next;
     });

@@ -1,10 +1,11 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePlan } from '../../context/PlanContext';
-import { AIChatConfig, ChatMessage as ChatMessageType, ChatSession } from '../../lib/types';
+import { AIChatConfig, AIProposal, ChatMessage as ChatMessageType, ChatSession } from '../../lib/types';
 import { runSimulation } from '../../lib/simulation';
 import { buildSystemPrompt } from '../../lib/buildChatContext';
 import { sendMessageStream } from '../../lib/aiClient';
+import { applyProposalToPlan } from '../../lib/applyProposal';
 import { loadChatConfig, saveChatSession, loadChatSessions } from '../../lib/chatStorage';
 import { generateId } from '../../lib/id';
 import ChatMessage from './ChatMessage';
@@ -12,7 +13,7 @@ import ChatInput from './ChatInput';
 import AISettingsModal from './AISettingsModal';
 
 export default function ChatPanel() {
-  const { plan } = usePlan();
+  const { plan, updatePlan } = usePlan();
   const [config, setConfig] = useState<AIChatConfig | null>(null);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [streamingContent, setStreamingContent] = useState('');
@@ -21,6 +22,8 @@ export default function ChatPanel() {
   const [sessionId, setSessionId] = useState(() => generateId());
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showSessionDrawer, setShowSessionDrawer] = useState(false);
+  const [appliedProposalIds, setAppliedProposalIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -139,6 +142,7 @@ export default function ChatPanel() {
   const handleLoadSession = (session: ChatSession) => {
     setSessionId(session.id);
     setMessages(session.messages);
+    setAppliedProposalIds(new Set());
   };
 
   const handleNewChat = () => {
@@ -146,7 +150,21 @@ export default function ChatPanel() {
     setMessages([]);
     setStreamingContent('');
     setError(null);
+    setAppliedProposalIds(new Set());
   };
+
+  const handleApplyProposal = useCallback((proposal: AIProposal) => {
+    updatePlan((prevPlan) => {
+      const updates = applyProposalToPlan(prevPlan, proposal);
+      if (Object.keys(updates).length > 0) {
+        setAppliedProposalIds((prev) => new Set(prev).add(proposal.id));
+        setError(null);
+      } else {
+        setError('この提案は反映できる項目がありません');
+      }
+      return updates;
+    });
+  }, [updatePlan]);
 
   const hasApiKey = !!config?.apiKey;
 
@@ -155,6 +173,19 @@ export default function ChatPanel() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <div className="flex items-center gap-2">
+          {sessions.length > 0 && (
+            <button
+              onClick={() => setShowSessionDrawer(true)}
+              className="lg:hidden p-1 rounded hover:bg-gray-100 transition-colors text-gray-500"
+              aria-label="履歴を表示"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <line x1="3" y1="5" x2="17" y2="5" />
+                <line x1="3" y1="10" x2="17" y2="10" />
+                <line x1="3" y1="15" x2="17" y2="15" />
+              </svg>
+            </button>
+          )}
           <h2 className="text-lg font-bold text-gray-800">AI相談チャット</h2>
           {hasApiKey && (
             <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
@@ -178,8 +209,64 @@ export default function ChatPanel() {
         </div>
       </div>
 
+      {/* Mobile session drawer */}
+      {showSessionDrawer && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+            aria-hidden="true"
+            tabIndex={-1}
+            onClick={() => setShowSessionDrawer(false)}
+          />
+          <div
+            className="fixed inset-y-0 left-0 w-64 bg-white shadow-xl z-50 lg:hidden flex flex-col"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="chat-session-drawer-title"
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.stopPropagation();
+                e.preventDefault();
+                setShowSessionDrawer(false);
+              }
+            }}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <p id="chat-session-drawer-title" className="text-sm font-semibold text-gray-700">チャット履歴</p>
+              <button
+                onClick={() => setShowSessionDrawer(false)}
+                className="p-1 rounded hover:bg-gray-100 text-gray-500"
+                aria-label="閉じる"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="5" y1="5" x2="15" y2="15" />
+                  <line x1="5" y1="15" x2="15" y2="5" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2">
+              {sessions.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => {
+                    handleLoadSession(s);
+                    setShowSessionDrawer(false);
+                  }}
+                  className={`block w-full text-left text-sm text-gray-600 hover:bg-gray-100 rounded px-3 py-2 truncate transition-colors ${
+                    s.id === sessionId ? 'bg-indigo-50 text-indigo-700 font-medium' : ''
+                  }`}
+                >
+                  {s.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       <div className="flex flex-1 min-h-0">
-        {/* Sidebar: session history */}
+        {/* Sidebar: session history (desktop) */}
         {sessions.length > 0 && (
           <div className="w-48 border-r border-gray-200 overflow-y-auto p-2 hidden lg:block">
             <p className="text-xs font-medium text-gray-400 mb-2 px-1">履歴</p>
@@ -187,7 +274,9 @@ export default function ChatPanel() {
               <button
                 key={s.id}
                 onClick={() => handleLoadSession(s)}
-                className="block w-full text-left text-xs text-gray-600 hover:bg-gray-100 rounded px-2 py-1.5 truncate transition-colors"
+                className={`block w-full text-left text-xs text-gray-600 hover:bg-gray-100 rounded px-2 py-1.5 truncate transition-colors ${
+                  s.id === sessionId ? 'bg-indigo-50 text-indigo-700 font-medium' : ''
+                }`}
               >
                 {s.title}
               </button>
@@ -244,7 +333,13 @@ export default function ChatPanel() {
             {messages
               .filter((msg) => msg.role !== 'system')
               .map((msg) => (
-                <ChatMessage key={msg.id} role={msg.role as 'user' | 'assistant'} content={msg.content} />
+                <ChatMessage
+                  key={msg.id}
+                  role={msg.role as 'user' | 'assistant'}
+                  content={msg.content}
+                  onApplyProposal={handleApplyProposal}
+                  appliedProposalIds={appliedProposalIds}
+                />
               ))}
 
             {streamingContent && (

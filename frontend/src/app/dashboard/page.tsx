@@ -2,9 +2,11 @@
 import { useState, useMemo, useCallback } from 'react';
 import { usePlan } from '../../context/PlanContext';
 import { runSimulation, formatMan } from '../../lib/simulation';
+import { calcMilestoneMetrics } from '../../lib/milestoneMetrics';
 import { loadScenarios } from '../../lib/storage';
 import { Scenario } from '../../lib/types';
 import SummaryCards from '../../components/dashboard/SummaryCards';
+import MilestoneCards from '../../components/dashboard/MilestoneCards';
 import FinancialAdvice from '../../components/dashboard/FinancialAdvice';
 import AssetProjectionChart from '../../components/charts/AssetProjectionChart';
 import CashflowChart from '../../components/charts/CashflowChart';
@@ -26,6 +28,10 @@ export default function DashboardPage() {
 
   const simulationData = useMemo(() => runSimulation(plan, 30), [plan]);
   const currentData = simulationData[0];
+  const milestoneMetrics = useMemo(
+    () => calcMilestoneMetrics(simulationData),
+    [simulationData]
+  );
 
   const compareScenario = useMemo(
     () => (compareScenarioId ? scenarios.find((s) => s.id === compareScenarioId) ?? null : null),
@@ -52,6 +58,11 @@ export default function DashboardPage() {
         {/* Summary Cards */}
         <div className="mb-8">
           <SummaryCards current={currentData} plan={plan} />
+        </div>
+
+        {/* Milestone Metrics */}
+        <div className="mb-8">
+          <MilestoneCards metrics={milestoneMetrics} />
         </div>
 
         {/* Financial Advice */}

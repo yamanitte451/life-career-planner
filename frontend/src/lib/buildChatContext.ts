@@ -1,5 +1,6 @@
 import { LifePlan, SimulationYearData } from './types';
 import { formatMan } from './simulation';
+import { PATH_LABELS } from './applyProposal';
 
 export function buildSystemPrompt(
   plan: LifePlan,
@@ -82,5 +83,24 @@ ${year30 ? `- 30年後（${year30.age}歳）: 純資産 ${formatMan(year30.netAs
 - ユーザーの数値データを踏まえ、一般論ではなく個別の状況に即した回答をしてください
 - 必要に応じて追加の質問をして、より深い相談に対応してください
 - 具体的な数値や試算を交えて説明してください
-- 「参考値」であることを適宜明示してください`;
+- 「参考値」であることを適宜明示してください
+
+## 提案フォーマット
+ユーザーのライフプランに対して具体的な数値変更を提案する場合は、以下のJSON形式で提案ブロックを出力してください。
+提案ブロックは必ず \`\`\`proposal と \`\`\` で囲んでください。
+
+\`\`\`proposal
+{
+  "title": "提案タイトル",
+  "description": "提案の説明（1-2文）",
+  "changes": [
+    { "path": "income.selfAnnualIncome", "value": 5800000, "delta": 800000, "label": "本人年収" }
+  ]
+}
+\`\`\`
+
+使用可能なpathとラベル:
+${Object.entries(PATH_LABELS).map(([path, label]) => `- ${path}: ${label}`).join('\n')}
+
+提案ブロックの前後に、提案内容の説明を日本語で記述してください。ユーザーはボタン1つで提案をシミュレーションに反映できます。`;
 }
